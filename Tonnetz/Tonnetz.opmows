@@ -1,0 +1,28 @@
+;;; file version
+
+3 
+
+;;; navigator
+
+(:GROUP "root" ((:FILE "Tonnetz.opmo")))
+
+;;; layout plist
+
+NIL
+
+;;; composer
+
+NIL 
+
+;;; list of assistants
+
+NIL 
+
+;;; grid menu state 
+
+(:GRID-MENU-STATE
+ (:COMPOSER
+  ("/Volumes/Data/Repos/OM/ClTonnetz/Tonnetz.opmo" "score.opmo")
+  :ASSISTANTS NIL))
+
+;;; quick-view pathname
