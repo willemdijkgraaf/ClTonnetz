@@ -135,36 +135,37 @@
     (midi-to-pitch (vector-to-list triad-v))))
 
 
-(defun to-tonnetz (triad moves)
+(defun apply-tonnetz (triad moves)
   (let ((ret (list triad)))
     (dolist (move moves)
       (push (funcall (gethash move *tonnetz-moves*) triad) ret))
     (reverse ret)))
 
+(defparameter triad '(c4 e4 g4))
 ;;; tests L-move
-(equal (move '(c4 e4 g4) 'l) '(b3 e4 g4)) ; L-move starting on major triad
-(equal (move '(c4 eb4 g4) 'l) '(c4 eb4 gs4)) ; L-move starting on minor triad
-(equal (move '(eb4 gb4 bb4) 'l) '(eb4 fs4 b4)) ; L-move starting on minor triad
+(equal (apply-tonnetz '(c4 e4 g4) '(l)) '((c4 e4 g4)(b3 e4 g4))) ; L-move starting on major triad
+(equal (apply-tonnetz '(c4 eb4 g4) '(l)) '((c4 eb4 g4)(c4 eb4 gs4))) ; L-move starting on minor triad
+(equal (apply-tonnetz '(eb4 gb4 bb4) '(l)) '((eb4 gb4 bb4)(eb4 fs4 b4))) ; L-move starting on minor triad
 
 ;;; tests P-move
-(equal (move '(c4 e4 g4) 'p) '(c4 eb4 g4)) ; P-move starting on major triad
-(equal (move '(c4 eb4 g4) 'p) '(c4 e4 g4)) ; P-move starting on minor triad
+(equal (apply-tonnetz '(c4 e4 g4) '(p)) '((c4 e4 g4)(c4 eb4 g4))) ; P-move starting on major triad
+(equal (apply-tonnetz '(c4 eb4 g4) '(p)) '((c4 eb4 g4)(c4 e4 g4))) ; P-move starting on minor triad
 
 ;;; tests R-move
-(equal (move '(c4 e4 g4) 'r) '(c4 e4 a4)) ; R-move starting on major triad
-(equal (move '(c4 eb4 g4) 'r) '(bb3 eb4 g4)) ; R-move starting on minor triad
+(equal (apply-tonnetz '(c4 e4 g4) '(r)) '((c4 e4 g4)(c4 e4 a4))) ; R-move starting on major triad
+(equal (apply-tonnetz '(c4 eb4 g4) '(r)) '((c4 eb4 g4)(bb3 eb4 g4))) ; R-move starting on minor triad
 
 ;;; tests N-move
-(equal (move '(c4 e4 g4) 'n) '(c4 f4 gs4)) ; N-move starting on major triad
-(equal (move '(c4 eb4 g4) 'n) '(b3 d4 g4)) ; N-move starting on minor triad
+(equal (apply-tonnetz '(c4 e4 g4) '(n)) '((c4 e4 g4)(c4 f4 gs4))) ; N-move starting on major triad
+(equal (apply-tonnetz '(c4 eb4 g4) '(n)) '((c4 eb4 g4)(b3 d4 g4))) ; N-move starting on minor triad
 
 ;;; tests S-move
-(equal (move '(c4 e4 g4) 's) '(cs4 e4 gs4)) ; S-move starting on major triad
-(equal (move '(c4 eb4 g4) 's) '(b3 eb4 fs4)) ; S-move starting on minor triad
+(equal (apply-tonnetz '(c4 e4 g4) '(s)) '((c4 e4 g4)(cs4 e4 gs4))) ; S-move starting on major triad
+(equal (apply-tonnetz '(c4 eb4 g4) '(s)) '((c4 eb4 g4)(b3 eb4 fs4))) ; S-move starting on minor triad
 
 ;;; HERE THE USAGE IS SHOWN 
 (setf moves '(l r n s p))
-(setf harmonies (to-tonnetz '(eb4 gb4 bb4) moves))
+(setf harmonies (apply-tonnetz '(eb4 gb4 bb4) moves))
 
 (defun harmony-to-melody (harmonies voice-number)
   (let ((ret '()))
