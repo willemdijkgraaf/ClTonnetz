@@ -169,24 +169,23 @@
 (equal (move-n '(c4 eb4 g4)) '(b3 d4 g4)) ; N-move starting on minor triad
 
 (defun move-s (triad)
-  (move-r (move-p (move-l '(c4 eb4 g4))))
+  (move-r (move-p (move-l '(c4 eb4 g4)))))
 
 ;;; tests
 (equal (move-s '(c4 e4 g4)) '(cs4 e4 gs4)) ; S-move starting on major triad
 (equal (move-s '(c4 eb4 g4)) '(b3 eb4 fs4)) ; S-move starting on minor triad
 
+(defparameter *tonnetz-moves* (make-hash-table :test 'equal))
+(setf (gethash 'l *tonnetz-moves*) (lambda (triad) (move-l triad)))
+(setf (gethash 'p *tonnetz-moves*) (lambda (triad) (move-p triad)))
+(setf (gethash 'r *tonnetz-moves*) (lambda (triad) (move-r triad)))
+(setf (gethash 'n *tonnetz-moves*) (lambda (triad) (move-n triad)))
+(setf (gethash 's *tonnetz-moves*) (lambda (triad) (move-s triad)))
+
 (defun to-tonnetz (triad moves)
-  (let ((ret (list triad))
-        (move-ret '()))
+  (let ((ret (list triad)))
     (dolist (move moves)
-      (cond
-       ((equal move 'l) (setf move-ret (move-l (first ret))))
-       ((equal move 'p) (setf move-ret (move-p (first ret))))
-       ((equal move 'r) (setf move-ret (move-r (first ret))))
-       ((equal move 'n) (setf move-ret (move-n (first ret))))
-       ((equal move 's) (setf move-ret (move-s (first ret))))
-       (t (setf move-ret '())))
-      (push move-ret ret))
+      (push (funcall (gethash move *tonnetz-moves*) triad) ret))
     (reverse ret)))
 
 ;;; HERE THE USAGE IS SHOWN 
