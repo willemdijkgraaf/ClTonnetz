@@ -9,6 +9,8 @@
 (setf (gethash '(3 -4) *triad-interval-to-degrees*) '(5 3 1))
 (setf (gethash '(3 5) *triad-interval-to-degrees*) '(3 5 1))
 (setf (gethash '(5 4) *triad-interval-to-degrees*) '(5 1 3))
+(setf (gethash '(4 -9) *triad-interval-to-degrees*) '(1 3 5))
+(setf (gethash '(-3 -4) *triad-interval-to-degrees*) '(5 3 1))
 ;; minor triads
 (setf (gethash '(3 4) *triad-interval-to-degrees*) '(1 3 5))
 (setf (gethash '(-3 7) *triad-interval-to-degrees*) '(3 1 5))
@@ -19,42 +21,60 @@
 (setf (gethash '(4 5) *triad-interval-to-degrees*) '(3 5 1))
 (setf (gethash '(5 3) *triad-interval-to-degrees*) '(5 1 3))
 (setf (gethash '(-8 5) *triad-interval-to-degrees*) '(3 5 1))
+(setf (gethash '(3 -8) *triad-interval-to-degrees*) '(1 3 5))
+
+
+(defun get-root-intervals (pitches)
+  (integer-to-interval 
+   (sort-asc (pitch-to-integer (ambitus-octaves 'c4 1 pitches)))))
+
+;;; tests
+(equal (get-root-intervals '(g1 c9 e6)) '(4 3))
+(equal (get-root-intervals '(f3 d4 a4)) '(3 4))
 
 (defun triad-to-intervals (triad)
-  (pitch-to-interval 
-   (pitch-transpose 
-    (- 0 (find-min (pitch-to-midi (ambitus-octaves 0 2 triad)))) 
-    (ambitus-octaves 0 2 triad))))
+   (integer-to-interval (modus (pitch-transpose (- 0 (find-min (pitch-to-midi triad))) triad))))
 
 ;;; tests
 (equal (triad-to-intervals '(c3 e4 g5)) '(4 3))
 (equal (triad-to-intervals '(e3 g4 c5)) '(3 5))
-(equal (triad-to-intervals '(g4 c5 e5)) '(3 5))
+(equal (triad-to-intervals '(g4 c5 e5)) '(5 4))
 
 ;;; return true if triad is major triad
 (defun triad-is-major (triad)
-  (let ((intervals (triad-to-intervals triad)))
-   (cond
-     ((find intervals '((4 3) (3 -7) (-7 4) (-8 3) (3 5) (5 -8)) :test 'equal) '(T))
-     (T '()))))
+  (equal (get-root-intervals triad) '(4 3)))
+
 ;;;tests
-(equal (triad-is-major '(c4 e4 g4)) '(t))
-(equal (triad-is-major '(c4 e3 g5)) '(t))
-(equal (triad-is-major '(c4 e5 g2)) '(t))
-(equal (triad-is-major '(e3 g4 c5)) '(t))
-(equal (triad-is-major '(g4 c5 e5)) '(t))
+(equal (triad-is-major '(c4 e4 g4)) 't)
+(equal (triad-is-major '(c4 e3 g5)) 't)
+(equal (triad-is-major '(c4 e5 g2)) 't)
+(equal (triad-is-major '(e3 g4 c5)) 't)
+(equal (triad-is-major '(g4 c5 e5)) 't)
 (equal (triad-is-major '(c4 eb4 g4)) '())
 
-(defparameter triad '(eb4 gb4 bb4))
+(defparameter triad '(g4 e4 c4))
 
 ;;; input 3 notes and output which note is the root, the 3rd and the 5th
 (defun triad-to-degrees (triad) 
-  (let ((intervals (pitch-to-interval (ambitus-octaves 'c4 1 triad))))
+  (let ((intervals (triad-to-intervals triad)))
     (gethash intervals *triad-interval-to-degrees*)))
+
 ;;; tests
 (equal (triad-to-degrees '(c4 e4 g4)) '(1 3 5))
+(equal (triad-to-degrees '(c4 g4 e4)) '(1 5 3))
+(equal (triad-to-degrees '(e4 c4 g4)) '(3 1 5))
+(equal (triad-to-degrees '(g4 c4 e4)) '(5 1 3))
+(equal (triad-to-degrees '(e4 g4 c4)) '(3 5 1))
+(equal (triad-to-degrees '(g4 e4 c4)) '(5 3 1))
 (equal (triad-to-degrees '(c4 eb4 g4)) '(1 3 5))
+(equal (triad-to-degrees '(c4 g4 eb4)) '(1 5 3))
+(equal (triad-to-degrees '(eb4 c4 g4)) '(3 1 5))
+(equal (triad-to-degrees '(g4 c4 eb4)) '(5 1 3))
+(equal (triad-to-degrees '(eb4 g4 c4)) '(3 5 1))
+(equal (triad-to-degrees '(g4 eb4 c4)) '(5 3 1))
 (equal (triad-to-degrees '(eb4 gb4 bb4)) '(1 3 5))
+(equal (triad-to-degrees '(gb4 bb4 db3)) '(1 3 5))
+(equal (triad-to-degrees '(gb4 a4 db3)) '(1 3 5))
 
 (defun move-l (triad) 
   (let ((degrees (triad-to-degrees triad))
@@ -102,44 +122,44 @@
         (setf index (position '1 degrees))
         (decf (aref triad-v index) 2)))
     (midi-to-pitch (vector-to-list triad-v))))
+
 ;;; tests
 (equal (move-r '(c4 e4 g4)) '(c4 e4 a4)) ; R-move starting on major triad
 (equal (move-r '(c4 eb4 g4)) '(bb3 eb4 g4)) ; R-move starting on minor triad
 
 (defun move-n (triad)
   (move-p (move-l (move-r triad))))
+
 ;;; tests
 (equal (move-n '(c4 e4 g4)) '(c4 f4 gs4)) ; N-move starting on major triad
 (equal (move-n '(c4 eb4 g4)) '(b3 d4 g4)) ; N-move starting on minor triad
 
 (defun move-s (triad)
   (move-r (move-p (move-l triad))))
+
 ;;; tests
 (equal (move-s '(c4 e4 g4)) '(cs4 e4 gs4)) ; S-move starting on major triad
 (equal (move-s '(c4 eb4 g4)) '(b3 eb4 fs4)) ; S-move starting on minor triad
 
-(defun tn-l (triad)
-  (move-l triad))
-(defun tn-r (triad)
-  (move-r triad))
-(defun tn-p (triad)
-  (move-r triad))
-(defun tn-n (triad)
-  (move-n triad))
-(defun tn-s (triad)
-  (move-s triad))
-
 (defun to-tonnetz (triad moves)
-  (let ((ret (list triad)))
+  (let ((ret (list triad))
+        (move-ret '()))
     (dolist (move moves)
       (print ret)
-      (push (funcall move (first ret)) ret))
+      (cond
+       ((equal move 'l) (setf move-ret (move-l (first ret))))
+       ((equal move 'p) (setf move-ret (move-p (first ret))))
+       ((equal move 'r) (setf move-ret (move-r (first ret))))
+       ((equal move 'n) (setf move-ret (move-n (first ret))))
+       ((equal move 's) (setf move-ret (move-s (first ret))))
+       (t (setf move-ret '())))
+      (push move-ret ret))
     (reverse ret)))
 
 ;;; HERE THE USAGE IS SHOWN 
 (setf starting-triad '((eb4 gb4 bb4)))
-(setf moves '(tn-l tn-r tn-n tn-s tn-p tn-s tn-n tn-r tn-l))
-(setf harmonies (to-tonnetz '(eb4 gb4 bb4) moves))
+(setf moves '(l l p p r r n n))
+(setf harmonies (to-tonnetz '(c4 e4 g4) moves))
 
 (defun harmony-to-melody (harmonies voice-number)
   (let ((ret '()))
