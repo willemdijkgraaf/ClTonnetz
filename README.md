@@ -3,7 +3,4 @@ Simple Tonnetz implementation in Common Lisp for Opusmodus (http://www.opusmodus
 
 Example:
 
-(setf moves '(l l p p r r n n))
-
-(setf harmonies (to-tonnetz '(c4 e4 g4) moves))
-
+(to-tonnetz '(c4 e4 g4) '(l l p p r r n n)))
