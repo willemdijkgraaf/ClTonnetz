@@ -3,4 +3,4 @@ Simple Tonnetz implementation in Common Lisp for Opusmodus (http://www.opusmodus
 
 Example:
 
-(to-tonnetz '(c4 e4 g4) '(l l p p r r n n)))
+(apply-tonnetz '(c4 e4 g4) '(l l p p r r n n)))
