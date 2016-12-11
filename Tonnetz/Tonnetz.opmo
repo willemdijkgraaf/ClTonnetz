@@ -110,77 +110,30 @@
 (equal (triad-to-degrees '(eb4 g4 c4)) '(3 5 1))
 (equal (triad-to-degrees '(g4 eb4 c4)) '(5 3 1))
 
-(defun move-l (triad) 
-  (let ((degrees (triad-to-degrees triad))
-        (triad-v (list-to-vector (pitch-to-midi triad)))
-        (index))
-    (if (triad-is-major triad)
-      (progn
-        (setf index (position '1 degrees))
-        (decf (aref triad-v index)))
-      (progn
-        (setf index (position '5 degrees))
-        (incf (aref triad-v index))))
-    (midi-to-pitch (vector-to-list triad-v))))
-
-;;; tests
-(equal (move-l '(c4 e4 g4)) '(b3 e4 g4)) ; L-move starting on major triad
-(equal (move-l '(c4 eb4 g4)) '(c4 eb4 gs4)) ; L-move starting on minor triad
-(equal (move-l '(eb4 gb4 bb4)) '(eb4 fs4 b4)) ; L-move starting on minor triad
-
-(defun move-p (triad) 
-  (let ((degrees (triad-to-degrees triad))
-        (triad-v (list-to-vector (pitch-to-midi triad)))
-        (index))
-    (if (triad-is-major triad)
-      (progn
-        (setf index (position '3 degrees))
-        (decf (aref triad-v index)))
-      (progn
-        (setf index (position '3 degrees))
-        (incf (aref triad-v index))))
-    (midi-to-pitch (vector-to-list triad-v))))
-;;; tests
-(equal (move-p '(c4 e4 g4)) '(c4 eb4 g4)) ; P-move starting on major triad
-(equal (move-p '(c4 eb4 g4)) '(c4 e4 g4)) ; P-move starting on minor triad
-
-(defun move-r (triad) 
-  (let ((degrees (triad-to-degrees triad))
-        (triad-v (list-to-vector (pitch-to-midi triad)))
-        (index))
-    (if (triad-is-major triad)
-      (progn
-        (setf index (position '5 degrees))
-        (incf (aref triad-v index) 2))
-      (progn
-        (setf index (position '1 degrees))
-        (decf (aref triad-v index) 2)))
-    (midi-to-pitch (vector-to-list triad-v))))
-
-;;; tests
-(equal (move-r '(c4 e4 g4)) '(c4 e4 a4)) ; R-move starting on major triad
-(equal (move-r '(c4 eb4 g4)) '(bb3 eb4 g4)) ; R-move starting on minor triad
-
-(defun move-n (triad)
-  (move-p (move-l (move-r triad))))
-
-;;; tests
-(equal (move-n '(c4 e4 g4)) '(c4 f4 gs4)) ; N-move starting on major triad
-(equal (move-n '(c4 eb4 g4)) '(b3 d4 g4)) ; N-move starting on minor triad
-
-(defun move-s (triad)
-  (move-r (move-p (move-l '(c4 eb4 g4)))))
-
-;;; tests
-(equal (move-s '(c4 e4 g4)) '(cs4 e4 gs4)) ; S-move starting on major triad
-(equal (move-s '(c4 eb4 g4)) '(b3 eb4 fs4)) ; S-move starting on minor triad
+(defparameter *tonnetz-params* (make-hash-table :test 'equal))
+(setf (gethash 'l *tonnetz-params*) '((1 -1) (5 1)))
+(setf (gethash 'p *tonnetz-params*) '((3 -1) (3 1)))
+(setf (gethash 'r *tonnetz-params*) '((5 2) (1 -2))) 
 
 (defparameter *tonnetz-moves* (make-hash-table :test 'equal))
-(setf (gethash 'l *tonnetz-moves*) (lambda (triad) (move-l triad)))
-(setf (gethash 'p *tonnetz-moves*) (lambda (triad) (move-p triad)))
-(setf (gethash 'r *tonnetz-moves*) (lambda (triad) (move-r triad)))
-(setf (gethash 'n *tonnetz-moves*) (lambda (triad) (move-n triad)))
-(setf (gethash 's *tonnetz-moves*) (lambda (triad) (move-s triad)))
+(setf (gethash 'l *tonnetz-moves*) (lambda (triad) (move triad 'l)))
+(setf (gethash 'p *tonnetz-moves*) (lambda (triad) (move triad 'p)))
+(setf (gethash 'r *tonnetz-moves*) (lambda (triad) (move triad 'r)))
+(setf (gethash 'n *tonnetz-moves*) (lambda (triad) (move (move (move triad 'r) 'l) 'p)))
+(setf (gethash 's *tonnetz-moves*) (lambda (triad) (move (move (move triad 'l) 'p) 'r)))
+
+(defun move (triad move) 
+  (let ((degrees (triad-to-degrees triad))
+        (triad-v (list-to-vector (pitch-to-midi triad)))
+        (index 0)
+        (config '()))
+    (if (triad-is-major triad)
+      (setf config (first (gethash move *tonnetz-params*)))
+      (setf config (second (gethash move *tonnetz-params*))))
+    (setf index (position (first config) degrees))
+    (incf (aref triad-v index) (second config))
+    (midi-to-pitch (vector-to-list triad-v))))
+
 
 (defun to-tonnetz (triad moves)
   (let ((ret (list triad)))
@@ -188,9 +141,30 @@
       (push (funcall (gethash move *tonnetz-moves*) triad) ret))
     (reverse ret)))
 
+;;; tests L-move
+(equal (move '(c4 e4 g4) 'l) '(b3 e4 g4)) ; L-move starting on major triad
+(equal (move '(c4 eb4 g4) 'l) '(c4 eb4 gs4)) ; L-move starting on minor triad
+(equal (move '(eb4 gb4 bb4) 'l) '(eb4 fs4 b4)) ; L-move starting on minor triad
+
+;;; tests P-move
+(equal (move '(c4 e4 g4) 'p) '(c4 eb4 g4)) ; P-move starting on major triad
+(equal (move '(c4 eb4 g4) 'p) '(c4 e4 g4)) ; P-move starting on minor triad
+
+;;; tests R-move
+(equal (move '(c4 e4 g4) 'r) '(c4 e4 a4)) ; R-move starting on major triad
+(equal (move '(c4 eb4 g4) 'r) '(bb3 eb4 g4)) ; R-move starting on minor triad
+
+;;; tests N-move
+(equal (move '(c4 e4 g4) 'n) '(c4 f4 gs4)) ; N-move starting on major triad
+(equal (move '(c4 eb4 g4) 'n) '(b3 d4 g4)) ; N-move starting on minor triad
+
+;;; tests S-move
+(equal (move '(c4 e4 g4) 's) '(cs4 e4 gs4)) ; S-move starting on major triad
+(equal (move '(c4 eb4 g4) 's) '(b3 eb4 fs4)) ; S-move starting on minor triad
+
 ;;; HERE THE USAGE IS SHOWN 
 (setf moves '(l r n s p))
-(setf harmonies (to-tonnetz '(c4 e4 g4) moves))
+(setf harmonies (to-tonnetz '(eb4 gb4 bb4) moves))
 
 (defun harmony-to-melody (harmonies voice-number)
   (let ((ret '()))
@@ -203,7 +177,7 @@
 (setf melody-tenor (pitch-transpose -12 (harmony-to-melody harmonies 2)))
 (setf melody-bass (pitch-transpose -24 (harmony-to-melody harmonies 3)))
 
-;;; REST IS BOILERPLATE ...
+;;; THE REST IS BOILERPLATE ...
 (setf size (/ (list-length harmonies) 2))
 (setf bars (gen-repeat size '(4/4)))
 (setf pause (length-span bars '(-q)))
