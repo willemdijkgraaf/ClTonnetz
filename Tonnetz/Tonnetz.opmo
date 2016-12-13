@@ -21,38 +21,47 @@
    (sort-asc (pitch-to-midi (ambitus-octaves 'c4 1 triad)))))
 
 ;;; tests
-(equal (get-root-intervals '(g1 c9 e6)) '(4 3))
-(equal (get-root-intervals '(f3 d4 a4)) '(3 4))
+(deftest test-get-root-intervals ()
+  (check 
+    (equal (get-root-intervals '(g1 c9 e6)) '(4 3))
+    (equal (get-root-intervals '(f3 d4 a4)) '(3 4))))
+(test-get-root-intervals)
 
 ;;; return true if triad is major triad
 (defun triad-is-major (triad)
   (find (get-root-intervals triad) '((4 3) (3 5) (5 4)) :test 'equal))
-(defparameter triad '(c4 e4 g4))
+
 ;;;tests
-(equal (triad-is-major '(c4 e4 g4)) 't)
-(equal (triad-is-major '(c4 e3 g5)) 't)
-(equal (triad-is-major '(c4 e5 g2)) 't)
-(equal (triad-is-major '(e3 g4 c5)) 't)
-(equal (triad-is-major '(g4 c5 e5)) 't)
-(equal (triad-is-major '(c4 eb4 g4)) '())
+(deftest test-triad-is-major ()
+  (check
+    (equal (triad-is-major '(c4 e4 g4)) 't)
+    (equal (triad-is-major '(c4 e3 g5)) 't)
+    (equal (triad-is-major '(c4 e5 g2)) 't)
+    (equal (triad-is-major '(e3 g4 c5)) 't)
+    (equal (triad-is-major '(g4 c5 e5)) 't)
+    (equal (triad-is-major '(c4 eb4 g4)) '())))
+(test-triad-is-major)
 
 (defun triad-to-intervals (triad)
    (midi-to-interval (modus (pitch-transpose (- 0 (find-min (pitch-to-midi triad))) triad))))
 
 ;;; tests
-(equal (triad-to-intervals '(c3 e4 g5)) '(4 3))  ; 1 3 5
-(equal (triad-to-intervals '(c3 g4 e5)) '(7 -3)) ; 1 5 3 
-(equal (triad-to-intervals '(e3 c4 g5)) '(8 -5)) ; 3 1 5 
-(equal (triad-to-intervals '(g3 c4 e5)) '(5 4)) ; 5 1 3 
-(equal (triad-to-intervals '(e3 g4 c5)) '(3 5)) ; 3 5 1 
-(equal (triad-to-intervals '(g3 e4 c5)) '(9 -4)) ; 5 3 1
+(deftest test-triad-to-intervals () 
+  (check
+    (equal (triad-to-intervals '(c3 e4 g5)) '(4 3))  ; 1 3 5
+    (equal (triad-to-intervals '(c3 g4 e5)) '(7 -3)) ; 1 5 3 
+    (equal (triad-to-intervals '(e3 c4 g5)) '(8 -5)) ; 3 1 5 
+    (equal (triad-to-intervals '(g3 c4 e5)) '(5 4)) ; 5 1 3 
+    (equal (triad-to-intervals '(e3 g4 c5)) '(3 5)) ; 3 5 1 
+    (equal (triad-to-intervals '(g3 e4 c5)) '(9 -4)) ; 5 3 1
 
-(equal (triad-to-intervals '(c3 eb4 g5)) '(3 4))  ; 1 3 5
-(equal (triad-to-intervals '(c3 g4 eb5)) '(7 -4)) ; 1 5 3 
-(equal (triad-to-intervals '(eb3 c4 g5)) '(9 -5)) ; 3 1 5 
-(equal (triad-to-intervals '(g3 c4 eb5)) '(5 3)) ; 5 1 3 
-(equal (triad-to-intervals '(eb3 g4 c5)) '(4 5)) ; 3 5 1 
-(equal (triad-to-intervals '(g3 eb4 c5)) '(8 -3)) ; 5 3 1
+    (equal (triad-to-intervals '(c3 eb4 g5)) '(3 4))  ; 1 3 5
+    (equal (triad-to-intervals '(c3 g4 eb5)) '(7 -4)) ; 1 5 3 
+    (equal (triad-to-intervals '(eb3 c4 g5)) '(9 -5)) ; 3 1 5 
+    (equal (triad-to-intervals '(g3 c4 eb5)) '(5 3)) ; 5 1 3 
+    (equal (triad-to-intervals '(eb3 g4 c5)) '(4 5)) ; 3 5 1 
+    (equal (triad-to-intervals '(g3 eb4 c5)) '(8 -3)))) ; 5 3 1
+(test-triad-to-intervals)
 
 ;;; input 3 notes and output which note is the root, the 3rd and the 5th
 (defun triad-to-degrees (triad)
@@ -75,40 +84,42 @@
     (print ret)))
 
 ;;; tests
-(equal (triad-to-degrees '(c4 e4 g4)) '(1 3 5))
-(equal (triad-to-degrees '(c4 g4 e4)) '(1 5 3))
-(equal (triad-to-degrees '(e4 c4 g4)) '(3 1 5))
-(equal (triad-to-degrees '(g4 c4 e4)) '(5 1 3))
-(equal (triad-to-degrees '(e4 g4 c4)) '(3 5 1))
-(equal (triad-to-degrees '(g4 e4 c4)) '(5 3 1))
+(deftest test-triad-to-degrees ()
+  (check
+   (equal (triad-to-degrees '(c4 e4 g4)) '(1 3 5))
+   (equal (triad-to-degrees '(c4 g4 e4)) '(1 5 3))
+   (equal (triad-to-degrees '(e4 c4 g4)) '(3 1 5))
+   (equal (triad-to-degrees '(g4 c4 e4)) '(5 1 3))
+   (equal (triad-to-degrees '(e4 g4 c4)) '(3 5 1))
+   (equal (triad-to-degrees '(g4 e4 c4)) '(5 3 1))
 
-(equal (triad-to-degrees '(c4 eb4 g4)) '(1 3 5))
-(equal (triad-to-degrees '(c4 g4 eb4)) '(1 5 3))
-(equal (triad-to-degrees '(eb4 c4 g4)) '(3 1 5))
-(equal (triad-to-degrees '(g4 c4 eb4)) '(5 1 3))
-(equal (triad-to-degrees '(eb4 g4 c4)) '(3 5 1))
-(equal (triad-to-degrees '(g4 eb4 c4)) '(5 3 1))
+   (equal (triad-to-degrees '(c4 eb4 g4)) '(1 3 5))
+   (equal (triad-to-degrees '(c4 g4 eb4)) '(1 5 3))
+   (equal (triad-to-degrees '(eb4 c4 g4)) '(3 1 5))
+   (equal (triad-to-degrees '(g4 c4 eb4)) '(5 1 3))
+   (equal (triad-to-degrees '(eb4 g4 c4)) '(3 5 1))
+   (equal (triad-to-degrees '(g4 eb4 c4)) '(5 3 1))
 
-(equal (triad-to-degrees '(gb4 bb4 db4)) '(1 3 5))
-(equal (triad-to-degrees '(gb4 db4 bb4)) '(1 5 3))
-(equal (triad-to-degrees '(bb4 gb4 db4)) '(3 1 5))
-(equal (triad-to-degrees '(db4 gb4 bb4)) '(5 1 3))
-(equal (triad-to-degrees '(bb4 db4 gb4)) '(3 5 1))
+   (equal (triad-to-degrees '(gb4 bb4 db4)) '(1 3 5))
+   (equal (triad-to-degrees '(gb4 db4 bb4)) '(1 5 3))
+   (equal (triad-to-degrees '(bb4 gb4 db4)) '(3 1 5))
+   (equal (triad-to-degrees '(db4 gb4 bb4)) '(5 1 3))
+   (equal (triad-to-degrees '(bb4 db4 gb4)) '(3 5 1))
 
-(equal (triad-to-degrees '(gb4 a4 db4)) '(1 3 5))
-(equal (triad-to-degrees '(gb4 db4 a4)) '(1 5 3))
+   (equal (triad-to-degrees '(gb4 a4 db4)) '(1 3 5))
+   (equal (triad-to-degrees '(gb4 db4 a4)) '(1 5 3))
 
 
-(equal (triad-to-degrees '(e4 c4 g4)) '(3 1 5))
-(equal (triad-to-degrees '(g4 c4 e4)) '(5 1 3))
-(equal (triad-to-degrees '(e4 g4 c4)) '(3 5 1))
-(equal (triad-to-degrees '(g4 e4 c4)) '(5 3 1))
-(equal (triad-to-degrees '(c4 eb4 g4)) '(1 3 5))
-(equal (triad-to-degrees '(c4 g4 eb4)) '(1 5 3))
-(equal (triad-to-degrees '(eb4 c4 g4)) '(3 1 5))
-(equal (triad-to-degrees '(g4 c4 eb4)) '(5 1 3))
-(equal (triad-to-degrees '(eb4 g4 c4)) '(3 5 1))
-(equal (triad-to-degrees '(g4 eb4 c4)) '(5 3 1))
+   (equal (triad-to-degrees '(e4 c4 g4)) '(3 1 5))
+   (equal (triad-to-degrees '(g4 c4 e4)) '(5 1 3))
+   (equal (triad-to-degrees '(e4 g4 c4)) '(3 5 1))
+   (equal (triad-to-degrees '(g4 e4 c4)) '(5 3 1))
+   (equal (triad-to-degrees '(c4 eb4 g4)) '(1 3 5))
+   (equal (triad-to-degrees '(c4 g4 eb4)) '(1 5 3))
+   (equal (triad-to-degrees '(eb4 c4 g4)) '(3 1 5))
+   (equal (triad-to-degrees '(g4 c4 eb4)) '(5 1 3))
+   (equal (triad-to-degrees '(eb4 g4 c4)) '(3 5 1))
+   (equal (triad-to-degrees '(g4 eb4 c4)) '(5 3 1))))
 
 (defparameter *tonnetz-params* (make-hash-table :test 'equal))
 (setf (gethash 'l *tonnetz-params*) '((1 -1) (5 1)))
@@ -141,27 +152,41 @@
       (push (funcall (gethash move *tonnetz-moves*) triad) ret))
     (reverse ret)))
 
-(defparameter triad '(c4 e4 g4))
 ;;; tests L-move
-(equal (apply-tonnetz '(c4 e4 g4) '(l)) '((c4 e4 g4)(b3 e4 g4))) ; L-move starting on major triad
-(equal (apply-tonnetz '(c4 eb4 g4) '(l)) '((c4 eb4 g4)(c4 eb4 gs4))) ; L-move starting on minor triad
-(equal (apply-tonnetz '(eb4 gb4 bb4) '(l)) '((eb4 gb4 bb4)(eb4 fs4 b4))) ; L-move starting on minor triad
+(deftest test-apply-tonnetz-l-move ()
+  (check
+    (equal (apply-tonnetz '(c4 e4 g4) '(l)) '((c4 e4 g4)(b3 e4 g4))) ; L-move starting on major triad
+    (equal (apply-tonnetz '(c4 eb4 g4) '(l)) '((c4 eb4 g4)(c4 eb4 gs4))) ; L-move starting on minor triad
+    (equal (apply-tonnetz '(eb4 gb4 bb4) '(l)) '((eb4 gb4 bb4)(eb4 fs4 b4))))) ; L-move starting on minor triad
+(test-apply-tonnetz-l-move)
 
 ;;; tests P-move
-(equal (apply-tonnetz '(c4 e4 g4) '(p)) '((c4 e4 g4)(c4 eb4 g4))) ; P-move starting on major triad
-(equal (apply-tonnetz '(c4 eb4 g4) '(p)) '((c4 eb4 g4)(c4 e4 g4))) ; P-move starting on minor triad
+(deftest test-apply-tonnetz-p-move ()
+  (check
+    (equal (apply-tonnetz '(c4 e4 g4) '(p)) '((c4 e4 g4)(c4 eb4 g4))) ; P-move starting on major triad
+    (equal (apply-tonnetz '(c4 eb4 g4) '(p)) '((c4 eb4 g4)(c4 e4 g4))))) ; P-move starting on minor triad
+(test-apply-tonnetz-p-move)
 
 ;;; tests R-move
-(equal (apply-tonnetz '(c4 e4 g4) '(r)) '((c4 e4 g4)(c4 e4 a4))) ; R-move starting on major triad
-(equal (apply-tonnetz '(c4 eb4 g4) '(r)) '((c4 eb4 g4)(bb3 eb4 g4))) ; R-move starting on minor triad
+(deftest test-apply-tonnetz-r-move ()
+  (check
+    (equal (apply-tonnetz '(c4 e4 g4) '(r)) '((c4 e4 g4)(c4 e4 a4))) ; R-move starting on major triad
+    (equal (apply-tonnetz '(c4 eb4 g4) '(r)) '((c4 eb4 g4)(bb3 eb4 g4))))) ; R-move starting on minor triad
+(test-apply-tonnetz-r-move)
 
 ;;; tests N-move
-(equal (apply-tonnetz '(c4 e4 g4) '(n)) '((c4 e4 g4)(c4 f4 gs4))) ; N-move starting on major triad
-(equal (apply-tonnetz '(c4 eb4 g4) '(n)) '((c4 eb4 g4)(b3 d4 g4))) ; N-move starting on minor triad
+(deftest test-apply-tonnetz-n-move ()
+  (check
+    (equal (apply-tonnetz '(c4 e4 g4) '(n)) '((c4 e4 g4)(c4 f4 gs4))) ; N-move starting on major triad
+    (equal (apply-tonnetz '(c4 eb4 g4) '(n)) '((c4 eb4 g4)(b3 d4 g4))))) ; N-move starting on minor triad
+(test-apply-tonnetz-n-move)
 
 ;;; tests S-move
-(equal (apply-tonnetz '(c4 e4 g4) '(s)) '((c4 e4 g4)(cs4 e4 gs4))) ; S-move starting on major triad
-(equal (apply-tonnetz '(c4 eb4 g4) '(s)) '((c4 eb4 g4)(b3 eb4 fs4))) ; S-move starting on minor triad
+(deftest test-apply-tonnetz-s-move ()
+  (check
+    (equal (apply-tonnetz '(c4 e4 g4) '(s)) '((c4 e4 g4)(cs4 e4 gs4))) ; S-move starting on major triad
+    (equal (apply-tonnetz '(c4 eb4 g4) '(s)) '((c4 eb4 g4)(b3 eb4 fs4))))) ; S-move starting on minor triad
+(test-apply-tonnetz-s-move)
 
 ;;; HERE THE USAGE IS SHOWN 
 (setf moves '(l r n s p))
