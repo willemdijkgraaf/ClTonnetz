@@ -1,3 +1,5 @@
+(load (merge-pathnames "TestFramework.opmo" *load-truename*))
+
 ;;; setup hash table for quick lookup
 (defparameter *triad-interval-to-degrees* (make-hash-table :test 'equal))
 ;; major triads
@@ -187,101 +189,4 @@
     (equal (apply-tonnetz '(c4 e4 g4) '(s)) '((c4 e4 g4)(cs4 e4 gs4))) ; S-move starting on major triad
     (equal (apply-tonnetz '(c4 eb4 g4) '(s)) '((c4 eb4 g4)(b3 eb4 fs4))))) ; S-move starting on minor triad
 (test-apply-tonnetz-s-move)
-
-;;; HERE THE USAGE IS SHOWN 
-(setf moves '(l r n s p))
-(setf harmonies (apply-tonnetz '(eb4 gb4 bb4) moves))
-
-(defun harmony-to-melody (harmonies voice-number)
-  (let ((ret '()))
-    (dolist (harmony harmonies)
-      (setf ret (append ret (list (nth (- voice-number 1) harmony)))))
-    (print ret)))
-
-(setf melody-soprano (pitch-transpose 12 (harmony-to-melody harmonies 1)))
-(setf melody-alto (harmony-to-melody harmonies 1))
-(setf melody-tenor (pitch-transpose -12 (harmony-to-melody harmonies 2)))
-(setf melody-bass (pitch-transpose -24 (harmony-to-melody harmonies 3)))
-
-;;; THE REST IS BOILERPLATE ...
-(setf size (/ (list-length harmonies) 2))
-(setf bars (gen-repeat size '(4/4)))
-(setf pause (length-span bars '(-q)))
-
-(setf soprano (make-omn
- :length '(1/2)
- :pitch melody-soprano
- :velocity '(mp)
- :span :pitch))
-(setf alto (make-omn
- :length '(1/2)
- :pitch melody-alto
- :velocity '(mp)
- :span :pitch))
-(setf tenor (make-omn
- :length '(1/2)
- :pitch melody-tenor
- :velocity '(mp)
- :span :pitch))
-(setf bass (make-omn
- :length '(1/2)
- :pitch melody-bass
- :velocity '(mp)
- :span :pitch))
-
-;;;---------------------------------------------------------
-;;; Score and Layout
-;;;---------------------------------------------------------
-(midi-destinations)
-(def-score choir-satb
-           (:title "Title"
-            :composer "Composer"
-            :copyright "Copyright © "
-            :key-signature 'chromatic
-            :time-signature '((1 1 1 1) 4)
-            :tempo 42
-            :layout (choir-satb-layout
-                     'soprano 'alto 'tenor 'bass))
-  
-  (soprano
-   :port 0
-   :omn soprano
-   :channel 1
-   :sound 'gm
-   :program 'choir-aahs
-   :volume 100
-   :pan 16
-   :controllers (91 '(48))
-   )
-  
-  (alto
-   :omn alto
-   :channel 2
-   :sound 'gm
-   :program 'choir-aahs
-   :volume 100
-   :pan 41
-   :controllers (91 '(48))
-   )
-  
-  (tenor
-   :omn tenor
-   :channel 3
-   :sound 'gm
-   :program 'choir-aahs
-   :volume 100
-   :pan 86
-   :controllers (91 '(48))
-   )
-  
-  (bass
-   :omn bass
-   :channel 4
-   :sound 'gm
-   :program 'choir-aahs
-   :volume 100
-   :pan 111
-   :controllers (91 '(48))
-   )
-  )
 

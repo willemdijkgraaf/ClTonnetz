@@ -1,0 +1,37 @@
+;;; file version
+
+3 
+
+;;; navigator
+
+(:GROUP "root"
+ ((:FILE "TestFramework.opmo") (:FILE "Tonnetz.opmo")
+  (:FILE "score.opmo")))
+
+;;; layout plist
+
+(:NAVIGATOR-RECT #(0.0D0 0.0D0 350.0D0 1977.0D0)
+ :SELECTED-NAVIGATOR-TAB-TAG 0 :NAVIGATOR-COLLAPSED-P NIL
+ :MIDDLE-RECT #(351.0D0 0.0D0 2155.0D0 1977.0D0) :EDITOR-RECT
+ #(0.0D0 0.0D0 2155.0D0 1776.0D0) :COMPOSER-VISIBLE-P T
+ :ASSISTANT-VISIBLE-P NIL :LISTENER-RECT
+ #(0.0D0 1777.0D0 2155.0D0 200.0D0) :LISTENER-COLLAPSED-P NIL
+ :UTILITIES-RECT #(2507.0D0 0.0D0 0.0D0 1977.0D0)
+ :SELECTED-UTILITIES-TAB-TAG 6 :QUICK-VIEW-COLLAPSED-P T
+ :UTILITIES-COLLAPSED-P NIL)
+
+;;; composer
+
+"score.opmo" 
+
+;;; list of assistants
+
+NIL 
+
+;;; grid menu state 
+
+(:GRID-MENU-STATE
+ (:COMPOSER ("Tonnetz.opmo" "score.opmo" "TestFramework.opmo")
+  :ASSISTANTS NIL))
+
+;;; quick-view pathname
