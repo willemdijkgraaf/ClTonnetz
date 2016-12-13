@@ -1,5 +1,10 @@
 (load (merge-pathnames "TestFramework.opmo" *load-truename*))
 
+(defpackage :com.wimdijkgraaf.tonnetz
+  (:nicknames "TONNETZ")
+  (:use "COMMON-LISP" "OPUSMODUS")
+  (:export "APPLY-TONNETZ"))
+
 ;;; setup hash table for quick lookup
 (defparameter *triad-interval-to-degrees* (make-hash-table :test 'equal))
 ;; major triads
@@ -128,13 +133,6 @@
 (setf (gethash 'p *tonnetz-params*) '((3 -1) (3 1)))
 (setf (gethash 'r *tonnetz-params*) '((5 2) (1 -2))) 
 
-(defparameter *tonnetz-moves* (make-hash-table :test 'equal))
-(setf (gethash 'l *tonnetz-moves*) (lambda (triad) (move triad 'l)))
-(setf (gethash 'p *tonnetz-moves*) (lambda (triad) (move triad 'p)))
-(setf (gethash 'r *tonnetz-moves*) (lambda (triad) (move triad 'r)))
-(setf (gethash 'n *tonnetz-moves*) (lambda (triad) (move (move (move triad 'r) 'l) 'p)))
-(setf (gethash 's *tonnetz-moves*) (lambda (triad) (move (move (move triad 'l) 'p) 'r)))
-
 (defun move (triad move) 
   (let ((degrees (triad-to-degrees triad))
         (triad-v (list-to-vector (pitch-to-midi triad)))
@@ -147,6 +145,12 @@
     (incf (aref triad-v index) (second config))
     (midi-to-pitch (vector-to-list triad-v))))
 
+(defparameter *tonnetz-moves* (make-hash-table :test 'equal))
+(setf (gethash 'l *tonnetz-moves*) (lambda (triad) (move triad 'l)))
+(setf (gethash 'p *tonnetz-moves*) (lambda (triad) (move triad 'p)))
+(setf (gethash 'r *tonnetz-moves*) (lambda (triad) (move triad 'r)))
+(setf (gethash 'n *tonnetz-moves*) (lambda (triad) (move (move (move triad 'r) 'l) 'p)))
+(setf (gethash 's *tonnetz-moves*) (lambda (triad) (move (move (move triad 'l) 'p) 'r)))
 
 (defun apply-tonnetz (triad moves)
   (let ((ret (list triad)))

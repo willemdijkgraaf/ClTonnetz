@@ -2,9 +2,10 @@
 (load (merge-pathnames "Tonnetz.opmo" *load-truename*))
 
 ;;; HERE THE USAGE IS SHOWN 
-(setf moves '(l r n s p))
-(setf harmonies (apply-tonnetz '(c4 e4 g4) moves))
+(setf tonnetz-moves '(l r n s p))
+(setf harmonies (apply-tonnetz '(c4 e4 g4) tonnetz-moves))
 
+;;; THE REST IS BOILERPLATE ...
 (defun harmony-to-melody (harmonies voice-number)
   (let ((ret '()))
     (dolist (harmony harmonies)
@@ -16,7 +17,7 @@
 (setf melody-tenor (pitch-transpose -12 (harmony-to-melody harmonies 2)))
 (setf melody-bass (pitch-transpose -24 (harmony-to-melody harmonies 3)))
 
-;;; THE REST IS BOILERPLATE ...
+
 (setf size (/ (list-length harmonies) 2))
 (setf bars (gen-repeat size '(4/4)))
 (setf pause (length-span bars '(-q)))
