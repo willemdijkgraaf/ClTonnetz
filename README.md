@@ -1,5 +1,5 @@
 # ClTonnetz
-Simple Tonnetz implementation in Common Lisp for Opusmodus (http://www.opusmodus.com)
+Tonnetz implementation in Common Lisp for Opusmodus (http://www.opusmodus.com)
 
 Example:
 
