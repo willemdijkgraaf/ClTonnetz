@@ -154,9 +154,13 @@
 
 (defun apply-tonnetz (triad moves)
   (let ((ret (list triad)))
-    (dolist (move moves)
-      (setf triad (funcall (gethash move *tonnetz-moves*) triad))
-      (push triad ret))
+    (dolist (mov moves)
+      (if (typep mov 'cons)
+        (dolist (mv mov)
+          (setf triad (funcall (gethash mv *tonnetz-moves*) triad)))
+        (progn 
+          (setf triad (funcall (gethash mov *tonnetz-moves*) triad))
+          (push triad ret))))
     (reverse ret)))
 
 ;;; tests L-move
@@ -198,5 +202,11 @@
 ;;; tests various moves
 (deftest test-apply-various-moves ()
   (check
-    (equal (apply-tonnetz '(c4 e4 g4) '(l p)) '((c4 e4 g4)(b3 e4 g4)(b3 e4 gs4)))))
+    (equal (apply-tonnetz '(c4 e4 g4) '(l p r)) '((c4 e4 g4)(b3 e4 g4)(b3 e4 gs4)(cs4 e4 gs4)))))
 (test-apply-various-moves)
+
+;;; tests skipping of moves
+(deftest test-apply-skipping-moves ()
+  (check
+    (equal (apply-tonnetz '(c4 e4 g4) '(l (p) r)) '((c4 e4 g4)(b3 e4 g4)(cs4 e4 gs4)))))
+(test-apply-skipping-moves)

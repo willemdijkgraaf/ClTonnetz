@@ -31,7 +31,7 @@ NIL
 ;;; grid menu state 
 
 (:GRID-MENU-STATE
- (:COMPOSER ("Tonnetz.opmo" "score.opmo" "TestFramework.opmo")
+ (:COMPOSER ("TestFramework.opmo" "score.opmo" "Tonnetz.opmo")
   :ASSISTANTS NIL))
 
 ;;; quick-view pathname
